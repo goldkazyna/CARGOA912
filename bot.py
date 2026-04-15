@@ -2,6 +2,7 @@ import logging
 import os
 import sqlite3
 from io import BytesIO
+from dotenv import load_dotenv
 from openpyxl import Workbook
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -13,8 +14,11 @@ from telegram.ext import (
     filters,
 )
 
+load_dotenv()
+
 # --- Config ---
-BOT_TOKEN = "8791855388:AAEbwTATC13rwM1LKvNjjhbHB69yg1_PQZs"  # Вставь свой токен
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+PROXY_URL = os.getenv("PROXY_URL")
 ADMIN_IDS = [381314146, 634620925]  # Telegram ID админов
 
 # --- Logging ---
@@ -246,7 +250,10 @@ async def admin_export(update: Update, context):
 def main():
     init_db()
 
-    app = Application.builder().token(BOT_TOKEN).build()
+    builder = Application.builder().token(BOT_TOKEN)
+    if PROXY_URL:
+        builder = builder.proxy(PROXY_URL).get_updates_proxy(PROXY_URL)
+    app = builder.build()
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
