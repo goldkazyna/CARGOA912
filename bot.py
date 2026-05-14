@@ -1,8 +1,18 @@
+import fcntl
 import logging
 import os
 import sqlite3
+import sys
 from io import BytesIO
 from dotenv import load_dotenv
+
+_singleton_lock = open("/tmp/cargobot.lock", "w")
+try:
+    fcntl.flock(_singleton_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+except BlockingIOError:
+    print("Another cargo_bot instance is already running. Exiting.", file=sys.stderr)
+    sys.exit(1)
+
 from openpyxl import Workbook
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
